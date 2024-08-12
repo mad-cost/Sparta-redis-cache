@@ -30,7 +30,7 @@ public class CacheConfig {
             // 결과가 null이면 캐싱하지 않는다
             .disableCachingNullValues()
             // 기본 캐시 유지 시간을 유지 / Ttl(Time To Live)
-            .entryTtl(Duration.ofSeconds(10))
+            .entryTtl(Duration.ofSeconds(120))
             // 캐시를 구분하는 접두사 설정 / 캐시를할 때 캐시의 데이터가 Redis에 들어갈 때 키의 모습
             .computePrefixWith(CacheKeyPrefix.simple())
             // Redis 캐시에 저장할 값을 어떻게 직렬화/역직렬화 할것인지

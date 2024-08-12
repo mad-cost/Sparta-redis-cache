@@ -4,6 +4,7 @@ import com.example.redis.domain.Item;
 import com.example.redis.domain.ItemDto;
 import com.example.redis.repo.ItemRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,12 +19,19 @@ import java.util.List;
 @Slf4j
 @Service
 public class ItemService {
+    /*  @Cacheable: 시에 해당 키가 있는 경우 메서드를 실행하지 않고, 캐시된 값을 반환.
+        캐시에 키가 없을 경우에만 메서드를 실행하고, 결과를 캐시에 저장 (Cache-Aside)
+
+         @CachePut: 항상 메서드를 실행한 후, 그 결과를 캐시에 저장. 캐시에 저장된 값을 업데이트. (Write-Through)
+     */
+
     private final ItemRepository itemRepository;
     public ItemService(ItemRepository itemRepository) {
         this.itemRepository = itemRepository;
     }
 
-
+    // #result.id: create()를 통하여 반환하는 타입(ItemDto)의 id 값
+    @CachePut(cacheNames = "itemCache", key = "#result.id")
     public ItemDto create(ItemDto dto) {
         return ItemDto.fromEntity(itemRepository.save(Item.builder()
                 .name(dto.getName())
@@ -51,6 +59,11 @@ public class ItemService {
                         new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
+    @CachePut(cacheNames = "itemCache", key = "args[0]")
+//  update가 일어나면 readAll에 있던 캐시를 모두 지우고 싶을경우
+//  @CacheEvict(cacheNames = "itemAllCache", allEntries = true)
+    // 특정 키를 지정해서 캐시 삭제
+    @CacheEvict(cacheNames = "itemAllCache", key = "'readAll'")
     public ItemDto update(Long id, ItemDto dto) {
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
