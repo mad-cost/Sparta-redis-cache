@@ -77,4 +77,15 @@ public class ItemService {
         itemRepository.deleteById(id);
     }
 
+
+    @Cacheable( // 조회만 하기 때문에 @Cacheable 사용
+            cacheNames = "itemSearchCache",
+            // Postman의 Params에 {key:value}값으로 줄 수 있다/ {q:monitor}, {page:1}, {size:5}
+            key = "{ args[0], args[1].pageNumber, args[1].pageSize }"
+    )
+    public Page<ItemDto> searchByName(String query, Pageable pageable) {
+        return itemRepository.findAllByNameContains(query, pageable)
+                .map(ItemDto::fromEntity);
+    }
+
 }
