@@ -23,6 +23,7 @@ public class ItemService {
         this.itemRepository = itemRepository;
     }
 
+
     public ItemDto create(ItemDto dto) {
         return ItemDto.fromEntity(itemRepository.save(Item.builder()
                 .name(dto.getName())
@@ -31,6 +32,7 @@ public class ItemService {
                 .build()));
     }
 
+    @Cacheable(cacheNames = "itemAllCache", key = "methodName")
     public List<ItemDto> readAll() {
         return itemRepository.findAll()
                 .stream()
@@ -38,6 +40,10 @@ public class ItemService {
                 .toList();
     }
 
+    // cacheNames: 메서드로 인해서 만들어질 캐시를 지칭하는 이름
+    // key: 캐시의 데이터(itemCache)를 구분하기 위해 활용하는 값 / ex) 파라미터의 id가 다르면 캐시에 있는 데이터 값도 다르다
+    // args[0]: 메서드의 첫 번째 인자
+    @Cacheable(cacheNames = "itemCache", key = "args[0]") // 이 메서드의 결과는 캐싱이 가능하다
     public ItemDto readOne(Long id) {
         return itemRepository.findById(id)
                 .map(ItemDto::fromEntity)
